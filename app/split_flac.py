@@ -7,11 +7,13 @@ import uuid
 from datetime import datetime
 from socket import gethostname
 
+import chardet
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 FFMPEG = "ffmpeg"
 DOCKER_SPLIT_VOLUME = "/split_dir"
-DEV_BOX =  "ad-mbp.lan"
+DEV_BOX = "ad-mbp.lan"
 DEV_BOX_FFMPEG = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ffmpeg")
 FILE_TYPES = ['flac']
 APE_RENAME_STR = "ignore"
@@ -20,7 +22,6 @@ IGNORE_APE = True
 PERM_IGNORE_APE = False
 FLAC_RENAME_STR = "extracted"
 
-import chardet
 
 def detect_encoding(file_path):
     with open(file_path, 'rb') as f:
@@ -50,7 +51,7 @@ def get_track_length_2(duration_line):
     :return:
     """
     d = [x for x in duration_line if "Duration:" in x]
-    d1= d[0].split(",")[0].split("Duration: ")[1]
+    d1 = d[0].split(",")[0].split("Duration: ")[1]
     parts = d1.split(':')
     return extract_times(parts)
 
@@ -132,7 +133,7 @@ def convert_crlf_to_lf_utf8(input_file, output_file):
 
 def fix_cue_file(cuefile):
     if not detect_encoding(cuefile):
-        #raise ValueError("------ CUE ERROR CUE ERROR -------- Unable to detect encoding with high confidence.")
+        # raise ValueError("------ CUE ERROR CUE ERROR -------- Unable to detect encoding with high confidence.")
         print("------ CUE ERROR CUE ERROR -------- Unable to detect encoding with high confidence.")
         convert_crlf_to_lf_utf8(cuefile, cuefile)
 
@@ -148,6 +149,7 @@ def fix_cue_file(cuefile):
     with open(cuefile, 'w') as f:
         f.writelines(new_lines)
     print("leaving fix_cue_file")
+
 
 def cuedata(pth):
     METADATA = {b"TITLE": [], b"PERFORMER": [], b"INDEX": [], b"REM COMPOSER": []}
@@ -200,16 +202,15 @@ def rename_flac(flac_file, base_dir):
         shutil.move(flac_file, os.path.join(base_dir, f"{os.path.basename(flac_file)}.{FLAC_RENAME_STR}"))
         print(f"{os.path.join(base_dir, os.path.basename(flac_file))}.{FLAC_RENAME_STR}")
     except Exception:
-        shutil.move(flac_file, os.path.join(base_dir, f"{os.path.basename(flac_file)}.{FLAC_RENAME_STR}_{uuid.uuid4()}"))
+        shutil.move(flac_file,
+                    os.path.join(base_dir, f"{os.path.basename(flac_file)}.{FLAC_RENAME_STR}_{uuid.uuid4()}"))
         print(os.path.join(base_dir, f"{os.path.basename(flac_file)}.{FLAC_RENAME_STR}_{uuid.uuid4()}"))
-
 
 
 def cleanup(flac_file, base_dir):
     print(flac_file, base_dir)
     rename_flac(flac_file, base_dir)
 
-    
 
 def get_track_times(cue_data, flac_file, pos):
     track_start_end_times = cue_data[b'INDEX'][pos:pos + 2]
@@ -251,14 +252,6 @@ def run_service(cue_file, music_file, music_outdir_fpath, base_dir, ext, sim_mod
             job = create_track(music_file, stime, diff, title, artist, pos, outfile)
     if not sim_mode:
         cleanup(music_file, base_dir)
-
-
-# def find_cue_file(files, music_indir_fpath):
-#     for file in files:
-#         if file.lower().endswith('.cue'):
-#             cue_file = os.path.join(music_indir_fpath, file)
-#             fix_cue_file(cue_file)
-#             return cue_file
 
 
 def find_music_file(cue_file, music_indir_fpath):
@@ -311,6 +304,7 @@ def parse_args():
     parser.add_argument('--simulate', action='store_true', default=False, help='simulate, no ffmpeg')
     parser.add_argument('--base_dir', type=str, help='music base dir')
     return parser.parse_args()
+
 
 if __name__ == '__main__':
 

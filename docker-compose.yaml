@@ -15,3 +15,5 @@ services:
     volumes:
       - /volume1/downloads/testing:/testing_dir
       - /volume1/downloads/split_dir:/split_dir
+      - /volume1/flac_lib:/flac_dir
+      - /volume1/flac_lib_mp3:/mp3_dir
